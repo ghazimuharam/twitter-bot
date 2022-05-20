@@ -1,0 +1,27 @@
+{
+    "App":{
+        "consumer": {
+            "key": "your-production-consumer-key",
+            "secret": "your-production-consumer-secret"
+        },
+        "access": {
+            "token": "your-production-access-token",
+            "secret": "your-production-access-secret",
+            "accountID": "your-production-account-id"
+        },
+        "cronList": {
+            "readMessage": "* * * * *"
+        },
+        "featureFlag": {
+            "isCronWithSeconds": false
+        },
+        "numberOfDM": 15,
+        "triggerWord": "val!"
+    },
+    "Vendor": {
+        "localCache": {
+            "defaultExpiration": "0s", 
+            "cleanupInterval": "1h"
+        }
+    }
+}
