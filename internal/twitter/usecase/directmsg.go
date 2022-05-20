@@ -22,6 +22,10 @@ func NewDirectMessageUsecase(directMsgRepo internal_twitter.DirectMessageRepoItf
 	}
 }
 
+func (uc *DirectMessageUsecase) DeleteDirectMessages(directMsgID string) (bool, error) {
+	return uc.directMsgRepo.DeleteDirectMessages(directMsgID)
+}
+
 func (uc *DirectMessageUsecase) GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error) {
 	return uc.directMsgRepo.GetDirectMessages(cursor, numberOfDM)
 }
@@ -31,7 +35,7 @@ func (uc *DirectMessageUsecase) GetCleanDirectMessages(cursor string, lastDirect
 
 	for len(allDirectMessage.Events) < numberOfDM {
 		isOverlapDirectMsgID := false
-		dms, err := uc.directMsgRepo.GetDirectMessages(cursor, numberOfDM)
+		dms, err := uc.directMsgRepo.GetDirectMessages(cursor, uc.configs.App.DefaultCountTweetRetriever)
 		if err != nil {
 			return nil, err
 		}

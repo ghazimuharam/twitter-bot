@@ -5,6 +5,7 @@ import (
 )
 
 type DirectMessageRepoItf interface {
+	DeleteDirectMessages(directMsgID string) (bool, error)
 	GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error)
 	GetMediaFromDirectMessage(mediaURL string) ([]byte, error)
 }

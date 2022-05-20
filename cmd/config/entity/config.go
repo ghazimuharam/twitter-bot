@@ -10,12 +10,13 @@ type Config struct {
 
 // App configuration for main app config
 type App struct {
-	Consumer    Consumer
-	Access      Access
-	CronList    CronList
-	FeatureFlag FeatureFlag
-	NumberOfDM  int
-	TriggerWord string
+	Consumer                   Consumer
+	Access                     Access
+	CronList                   CronList
+	FeatureFlag                FeatureFlag
+	DefaultCountTweetRetriever int
+	NumberOfDM                 int
+	TriggerWord                string
 }
 
 // Consumer configuration for consumer key and secret

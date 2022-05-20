@@ -15,8 +15,9 @@
         "featureFlag": {
             "isCronWithSeconds": false
         },
+        "defaultCountTweetRetriever": 50,
         "numberOfDM": 15,
-        "triggerWord": "val!"
+        "triggerWord": "!val"
     },
     "Vendor": {
         "localCache": {

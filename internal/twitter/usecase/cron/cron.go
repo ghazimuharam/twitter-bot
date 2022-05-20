@@ -104,8 +104,15 @@ func (c *CronUsecase) TweetFromDirectMessage() {
 			continue
 		}
 
-		// logging
-		fmt.Println(tweet.IDStr + " - " + tweet.Text)
+		isDeleted, err := c.directMsgUC.DeleteDirectMessages(dm.ID)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if isDeleted {
+			// logging
+			fmt.Println(tweet.IDStr + " - " + tweet.Text)
+		}
 	}
 
 	// only set cache if dms event available

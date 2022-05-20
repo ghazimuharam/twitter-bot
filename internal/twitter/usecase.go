@@ -13,8 +13,9 @@ type MediaUCItf interface {
 }
 
 type DirectMessageUCItf interface {
-	GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error)
+	DeleteDirectMessages(directMsgID string) (bool, error)
 	GetCleanDirectMessages(cursor string, lastDirectMsgID string, numberOfDM int) (*twitter.DirectMessageEvents, error)
+	GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error)
 	GetMediaFromDirectMessage(mediaURL string) ([]byte, error)
 }
 

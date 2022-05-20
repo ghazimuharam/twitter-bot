@@ -40,6 +40,20 @@ func (dm *DirectMessageRepo) GetDirectMessages(cursor string, numberOfDM int) (*
 	return directMessages, nil
 }
 
+// DeleteDirectMessages to destroy direct message events
+func (dm *DirectMessageRepo) DeleteDirectMessages(directMsgID string) (bool, error) {
+	// get direct message using twitter client
+	destroyedDirectMsg, err := dm.client.DirectMessages.EventsDestroy(directMsgID)
+	if err != nil {
+		return false, err
+	}
+	if destroyedDirectMsg == nil {
+		return false, fmt.Errorf("err: %v", err)
+	}
+
+	return true, nil
+}
+
 // GetDirectMessage to get list of direct message including received and sent
 func (dm *DirectMessageRepo) GetMediaFromDirectMessage(mediaURL string) ([]byte, error) {
 	req, err := http.NewRequest("GET", mediaURL, nil)
