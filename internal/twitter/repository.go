@@ -2,16 +2,18 @@ package twitter
 
 import (
 	"github.com/ghazimuharam/go-twitter/twitter"
+	"github.com/ghazimuharam/twitter-bot/internal/twitter/entity"
 )
 
 type DirectMessageRepoItf interface {
 	DeleteDirectMessages(directMsgID string) (bool, error)
-	GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error)
+	GetDirectMessages(cursor string) (*twitter.DirectMessageEvents, error)
 	GetMediaFromDirectMessage(mediaURL string) ([]byte, error)
+	SendDirectMessage(tweet, recipientID string) (*twitter.DirectMessageEvent, error)
 }
 
 type TweetRepoItf interface {
-	CreateTweet(tweet string, mediaIds []int64) (*twitter.Tweet, error)
+	CreateTweet(entity.Tweet) (*twitter.Tweet, error)
 }
 
 type MediaRepoItf interface {

@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/ghazimuharam/go-twitter/twitter"
 	internal_twitter "github.com/ghazimuharam/twitter-bot/internal/twitter"
+	"github.com/ghazimuharam/twitter-bot/internal/twitter/entity"
 )
 
 type TweetUsecase struct {
@@ -16,9 +17,9 @@ func NewTweetUsecase(repo internal_twitter.TweetRepoItf) *TweetUsecase {
 }
 
 // CreateTweet to create a new tweet
-func (twt *TweetUsecase) CreateTweet(tweet string, mediaIds []int64) (*twitter.Tweet, error) {
+func (twt *TweetUsecase) CreateTweet(tweet entity.Tweet) (*twitter.Tweet, error) {
 	// get direct message using twitter client
-	postedTweet, err := twt.repo.CreateTweet(tweet, mediaIds)
+	postedTweet, err := twt.repo.CreateTweet(tweet)
 	if err != nil {
 		return nil, err
 	}

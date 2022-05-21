@@ -43,12 +43,10 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](template/assets/application.png)
-
+![twitter-bot](template/assets/application.png)
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 ### Built With
@@ -66,7 +64,7 @@ This project is heavily dependend on on the development phase
 <!-- CONTACT -->
 ## Contact
 
-Ghazi Muharam - [@your_twitter](https://twitter.com/ghzxmhrm) - email@example.com
+Ghazi Muharam - [@ghzxmhrm](https://twitter.com/ghzxmhrm) - ghzmhrmdev@gmail.com
 
 Project Link: [https://github.com/ghazimuharam/twitter-bot](https://github.com/ghazimuharam/twitter-bot)
 

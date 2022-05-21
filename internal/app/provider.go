@@ -13,6 +13,20 @@ import (
 )
 
 var (
+	repoSet = wire.NewSet(
+		provideTwitterClient,
+		provideTwitterClientWrapper,
+		wire.Bind(new(client.TwitterClientWrapperItf), new(*client.TwitterClientWrapper)),
+		provideDirectMessageRepo,
+		wire.Bind(new(internal_twitter.DirectMessageRepoItf), new(*repository.DirectMessageRepo)),
+		provideTweetRepo,
+		wire.Bind(new(internal_twitter.TweetRepoItf), new(*repository.TweetRepo)),
+		provideMediaRepo,
+		wire.Bind(new(internal_twitter.MediaRepoItf), new(*repository.MediaRepo)),
+		provideCacheRepo,
+		wire.Bind(new(internal_twitter.CacheRepoItf), new(*repository.CacheRepo)),
+	)
+
 	ucSet = wire.NewSet(
 		provideDirectMessageUsecase,
 		wire.Bind(new(internal_twitter.DirectMessageUCItf), new(*usecase.DirectMessageUsecase)),
@@ -22,18 +36,6 @@ var (
 		wire.Bind(new(internal_twitter.MediaUCItf), new(*usecase.MediaUsecase)),
 		provideCronUsecase,
 		wire.Bind(new(internal_twitter.CronUCitf), new(*cronuc.CronUsecase)),
-	)
-
-	repoSet = wire.NewSet(
-		provideTwitterClient,
-		provideDirectMessageRepo,
-		wire.Bind(new(internal_twitter.DirectMessageRepoItf), new(*repository.DirectMessageRepo)),
-		provideTweetRepo,
-		wire.Bind(new(internal_twitter.TweetRepoItf), new(*repository.TweetRepo)),
-		provideMediaRepo,
-		wire.Bind(new(internal_twitter.MediaRepoItf), new(*repository.MediaRepo)),
-		provideCacheRepo,
-		wire.Bind(new(internal_twitter.CacheRepoItf), new(*repository.CacheRepo)),
 	)
 
 	allSet = wire.NewSet(
@@ -51,16 +53,20 @@ func provideTwitterClient(configs *entity.Config) *twitter.Client {
 	return twitter.NewClient(httpClient)
 }
 
-func provideDirectMessageRepo(configs *entity.Config, client *twitter.Client) *repository.DirectMessageRepo {
-	return repository.NewDirectMessage(configs, client)
+func provideDirectMessageRepo(configs *entity.Config, client client.TwitterClientWrapperItf) *repository.DirectMessageRepo {
+	return repository.NewDirectMessageRepo(configs, client)
 }
 
-func provideTweetRepo(client *twitter.Client, configs *entity.Config) *repository.TweetRepo {
-	return repository.NewTweetRepo(client, configs)
+func provideTweetRepo(configs *entity.Config, client client.TwitterClientWrapperItf) *repository.TweetRepo {
+	return repository.NewTweetRepo(configs, client)
 }
 
-func provideMediaRepo(client *twitter.Client, configs *entity.Config) *repository.MediaRepo {
-	return repository.NewMediaRepo(client, configs)
+func provideMediaRepo(configs *entity.Config, client client.TwitterClientWrapperItf) *repository.MediaRepo {
+	return repository.NewMediaRepo(configs, client)
+}
+
+func provideTwitterClientWrapper(c *twitter.Client) *client.TwitterClientWrapper {
+	return client.NewTwitterClientWrapper(c)
 }
 
 func provideCacheRepo(configs *entity.Config) *repository.CacheRepo {
@@ -68,10 +74,11 @@ func provideCacheRepo(configs *entity.Config) *repository.CacheRepo {
 }
 
 func provideDirectMessageUsecase(
+	configs *entity.Config,
 	directMsgrepo internal_twitter.DirectMessageRepoItf,
 	cacheRepo internal_twitter.CacheRepoItf,
-	configs *entity.Config) *usecase.DirectMessageUsecase {
-	return usecase.NewDirectMessageUsecase(directMsgrepo, cacheRepo, configs)
+) *usecase.DirectMessageUsecase {
+	return usecase.NewDirectMessageUsecase(configs, directMsgrepo, cacheRepo)
 }
 
 func provideTweetUsecase(repo internal_twitter.TweetRepoItf) *usecase.TweetUsecase {
