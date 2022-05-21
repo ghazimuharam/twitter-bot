@@ -10,6 +10,7 @@ type Config struct {
 
 // App configuration for main app config
 type App struct {
+	Account                    Account
 	Consumer                   Consumer
 	Access                     Access
 	CronList                   CronList
@@ -17,6 +18,12 @@ type App struct {
 	DefaultCountTweetRetriever int
 	NumberOfDM                 int
 	TriggerWord                string
+}
+
+// Account configuration for Account id and handler
+type Account struct {
+	ID      string
+	Handler string
 }
 
 // Consumer configuration for consumer key and secret
@@ -27,9 +34,8 @@ type Consumer struct {
 
 // Access configuration for access token and secret
 type Access struct {
-	Token     string
-	Secret    string
-	AccountID string
+	Token  string
+	Secret string
 }
 
 // CronList configuration for cron timer

@@ -1,13 +1,16 @@
 {
     "App":{
+        "account": {
+            "id": "your-production-account-id",
+            "handler": "your-production-account-handler"
+        },
         "consumer": {
             "key": "your-production-consumer-key",
             "secret": "your-production-consumer-secret"
         },
         "access": {
             "token": "your-production-access-token",
-            "secret": "your-production-access-secret",
-            "accountID": "your-production-account-id"
+            "secret": "your-production-access-secret"
         },
         "cronList": {
             "readMessage": "* * * * *"

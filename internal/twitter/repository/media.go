@@ -5,6 +5,7 @@ import (
 
 	"github.com/ghazimuharam/go-twitter/twitter"
 	"github.com/ghazimuharam/twitter-bot/cmd/config/entity"
+	"github.com/ghazimuharam/twitter-bot/internal/twitter/repository/client"
 )
 
 var (
@@ -19,15 +20,15 @@ var (
 )
 
 type MediaRepo struct {
-	client  *twitter.Client
 	configs *entity.Config
+	client  client.TwitterClientWrapperItf
 }
 
 // NewMediaRepo to initialize MediaRepo Repository
-func NewMediaRepo(client *twitter.Client, configs *entity.Config) *MediaRepo {
+func NewMediaRepo(configs *entity.Config, client client.TwitterClientWrapperItf) *MediaRepo {
 	return &MediaRepo{
-		client:  client,
 		configs: configs,
+		client:  client,
 	}
 }
 
@@ -38,13 +39,8 @@ func (twt *MediaRepo) Upload(media []byte, mediaType string) (*twitter.MediaUplo
 		return nil, fmt.Errorf("media type not found")
 	}
 
-	mediaCategory, ok := mediaCategories[mediaType]
-	if !ok {
-		return nil, fmt.Errorf("media category not found")
-	}
-
 	// upload media using twitter client
-	uploadedMedia, _, err := twt.client.Media.Upload(media, mediaType, mediaCategory)
+	uploadedMedia, _, err := twt.client.UploadMedia(media, mediaType)
 	if err != nil {
 		return nil, err
 	}

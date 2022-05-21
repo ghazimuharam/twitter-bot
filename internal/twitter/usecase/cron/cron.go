@@ -8,7 +8,9 @@ import (
 	"github.com/ghazimuharam/twitter-bot/cmd/config/entity"
 	internal_twitter "github.com/ghazimuharam/twitter-bot/internal/twitter"
 	internal_entity "github.com/ghazimuharam/twitter-bot/internal/twitter/entity"
+	"github.com/ghazimuharam/twitter-bot/pkg/helper"
 	"github.com/ghazimuharam/twitter-bot/pkg/regex"
+	"github.com/ghazimuharam/twitter-bot/pkg/resolver"
 )
 
 const (
@@ -40,90 +42,146 @@ func NewCronUsecase(
 }
 
 func (c *CronUsecase) TweetFromDirectMessage() {
+	// define number of dm to retrieve, if the number
+	// of dm is 0 from the configs, change it to defaultNumberOfDM
 	if c.configs.App.NumberOfDM == 0 {
 		c.configs.App.NumberOfDM = defaultNumberOfDM
 	}
 
+	// define automatic trigger word, if the trigger word
+	// not defined in configs, set it to Trigger!
 	if c.configs.App.TriggerWord == "" {
 		c.configs.App.TriggerWord = "Trigger!"
 	}
 
-	lastDirectMsgID, err := c.cacheRepo.Get(internal_entity.MessageIDCacheKey)
-	if err != nil {
-		fmt.Println("cache not found")
-	} else {
-		fmt.Printf("using %s as lastDirectMsgID\n", lastDirectMsgID)
-	}
+	/*
+		line deprecated because other solution is provided
 
-	dms, err := c.directMsgUC.GetCleanDirectMessages("", lastDirectMsgID, c.configs.App.NumberOfDM)
+		// last direct msg id used to keep up
+		// lastDirectMsgID, err := c.cacheRepo.Get(internal_entity.MessageIDCacheKey)
+		// if err != nil {
+		// 	fmt.Println("cache not found")
+		// } else {
+		// 	fmt.Printf("using %s as lastDirectMsgID\n", lastDirectMsgID)
+		// }
+	*/
+
+	// get direct message from user
+	dms, err := c.directMsgUC.GetCleanDirectMessages("", "", c.configs.App.NumberOfDM)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	for _, dm := range dms.Events {
-		// check if we overlapping with tweeted message
-		if dm.ID == lastDirectMsgID {
-			// if message already tweeted, break the loop
-			fmt.Println("dm.ID is overlapping with lastDirectMsgID")
-			break
-		}
+		var toTweet internal_entity.Tweet
+
+		/*
+			line deprecated because other solution is provided
+
+			// check if we overlapping with tweeted message
+			// if dm.ID == lastDirectMsgID {
+			// 	// if message already tweeted, break the loop
+			// 	fmt.Println("dm.ID is overlapping with lastDirectMsgID")
+			// 	break
+			// }
+		*/
 
 		// check if dm text have a trigger word
 		directMsgText := regex.RemoveURLFromString(dm.Message.Data.Text)
+		toTweet.Tweet = directMsgText
 		if !strings.Contains(strings.ToLower(directMsgText), strings.ToLower(c.configs.App.TriggerWord)) {
 			fmt.Println("dm text doesn't have a trigger word")
 			continue
 		}
 
-		// make it safe because we need to access the data when
-		// we tweet
+		// check is there any url in dm
+		if urlInDM := regex.MatchURLFromString(dm.Message.Data.Text); urlInDM != "" {
+			// set the url that have been resolved as a tweet attachment url
+			toTweet.AttachmentURL, err = resolver.GetRedirectURL(urlInDM)
+			if err != nil {
+				fmt.Println("error resolving: ", err)
+				continue
+			}
+		}
+
+		// if tweet attachment url is not related to twitter
+		// remove it from attachment and use the text from dm
+		if !strings.Contains(toTweet.AttachmentURL, "twitter.com") {
+			toTweet.AttachmentURL = ""
+			toTweet.Tweet = dm.Message.Data.Text
+		}
+
+		// define media uploaded so it will not cause a panic
 		mediaUploaded := &twitter.MediaUploadResult{}
+
+		// check dm attachment, if attachment is presence
+		// the value is not nil
 		if dm.Message.Data.Attachment != nil {
+			// get media byte from dm attachment
 			mediaByte, err := c.directMsgUC.GetMediaFromDirectMessage(dm.Message.Data.Attachment.Media.MediaURL)
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
 
+			// check is media downloaded is in a list of supported media
 			if dm.Message.Data.Attachment.Media.Type == internal_entity.SupportedMediaType {
+				// upload media to twitter
 				mediaUploaded, err = c.mediaUC.Upload(mediaByte, dm.Message.Data.Attachment.Media.Type)
 				if err != nil {
 					fmt.Println(err)
 					continue
 				}
 			}
+
+			// remove any attachment url if
+			toTweet.AttachmentURL = ""
 		}
 
-		tweet, err := c.tweetUC.CreateTweet(
-			regex.RemoveURLFromString(dm.Message.Data.Text),
-			setMediaFile(mediaUploaded),
-		)
+		// set media ids from uploaded media
+		toTweet.MediaIds = setMediaFile(mediaUploaded)
+
+		// create a tweet
+		tweet, err := c.tweetUC.CreateTweet(toTweet)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 
+		_, err = c.directMsgUC.SendDirectMessage("Success "+helper.TwitterURLBuilder(
+			c.configs.App.Account.Handler,
+			tweet.IDStr,
+		), dm.Message.SenderID)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// delete the dm if it's already tweeted
 		isDeleted, err := c.directMsgUC.DeleteDirectMessages(dm.ID)
 		if err != nil {
 			fmt.Println(err)
 		}
 
+		// log if all process is clear
 		if isDeleted {
-			// logging
 			fmt.Println(tweet.IDStr + " - " + tweet.Text)
 		}
 	}
 
-	// only set cache if dms event available
-	if dms != nil && len(dms.Events) != 0 {
-		lastDirectMsgID = dms.Events[len(dms.Events)-1].ID
-		// set last read message to local cache, only log
-		// if lastDirectMsgID is not empty
-		if lastDirectMsgID != "" {
-			c.cacheRepo.Set(internal_entity.MessageIDCacheKey, lastDirectMsgID)
-		}
-	}
+	/*
+		line deprecated because other solution is provided
+
+		// only set cache if dms event available
+		// if dms != nil && len(dms.Events) != 0 {
+		// 	lastDirectMsgID = dms.Events[len(dms.Events)-1].ID
+		// 	// set last read message to local cache, only log
+		// 	// if lastDirectMsgID is not empty
+		// 	if lastDirectMsgID != "" {
+		// 		c.cacheRepo.Set(internal_entity.MessageIDCacheKey, lastDirectMsgID)
+		// 	}
+		// }
+	*/
 }
 
 func setMediaFile(mediaUploaded *twitter.MediaUploadResult) []int64 {

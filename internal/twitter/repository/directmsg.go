@@ -10,25 +10,40 @@ import (
 	"github.com/ghazimuharam/twitter-bot/internal/twitter/repository/client"
 )
 
+// DirectMessageRepo is a struct to hold Direct Message implementation repository
 type DirectMessageRepo struct {
 	configs *entity.Config
-	client  *twitter.Client
+	client  client.TwitterClientWrapperItf
 }
 
 // NewDirectMessage to initialize DirectMessage Repository
-func NewDirectMessage(configs *entity.Config, client *twitter.Client) *DirectMessageRepo {
+func NewDirectMessageRepo(configs *entity.Config, client client.TwitterClientWrapperItf) *DirectMessageRepo {
 	return &DirectMessageRepo{
 		configs: configs,
 		client:  client,
 	}
 }
 
-// GetDirectMessage to get list of direct message including received and sent
-func (dm *DirectMessageRepo) GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error) {
+// DeleteDirectMessages to destroy direct message events
+func (dm *DirectMessageRepo) DeleteDirectMessages(directMsgID string) (bool, error) {
 	// get direct message using twitter client
-	directMessages, _, err := dm.client.DirectMessages.EventsList(&twitter.DirectMessageEventsListParams{
+	destroyedDirectMsg, err := dm.client.DeleteDirectMessages(directMsgID)
+	if err != nil {
+		return false, err
+	}
+	if destroyedDirectMsg == nil {
+		return false, fmt.Errorf("err: %v", err)
+	}
+
+	return true, nil
+}
+
+// GetDirectMessage to get list of direct message including received and sent
+func (dm *DirectMessageRepo) GetDirectMessages(cursor string) (*twitter.DirectMessageEvents, error) {
+	// get direct message using twitter client
+	directMessages, _, err := dm.client.GetDirectMessages(&twitter.DirectMessageEventsListParams{
 		Cursor: cursor,
-		Count:  numberOfDM,
+		Count:  dm.configs.App.DefaultCountTweetRetriever,
 	})
 	if err != nil {
 		return nil, err
@@ -38,20 +53,6 @@ func (dm *DirectMessageRepo) GetDirectMessages(cursor string, numberOfDM int) (*
 	}
 
 	return directMessages, nil
-}
-
-// DeleteDirectMessages to destroy direct message events
-func (dm *DirectMessageRepo) DeleteDirectMessages(directMsgID string) (bool, error) {
-	// get direct message using twitter client
-	destroyedDirectMsg, err := dm.client.DirectMessages.EventsDestroy(directMsgID)
-	if err != nil {
-		return false, err
-	}
-	if destroyedDirectMsg == nil {
-		return false, fmt.Errorf("err: %v", err)
-	}
-
-	return true, nil
 }
 
 // GetDirectMessage to get list of direct message including received and sent
@@ -74,4 +75,30 @@ func (dm *DirectMessageRepo) GetMediaFromDirectMessage(mediaURL string) ([]byte,
 	}
 
 	return data, nil
+}
+
+// SendDirectMessages to sent a direct message
+func (dm *DirectMessageRepo) SendDirectMessage(tweet, recipientID string) (*twitter.DirectMessageEvent, error) {
+	// get direct message using twitter client
+	SendDirectMessages, _, err := dm.client.SendDirectMessage(&twitter.DirectMessageEventsNewParams{
+		Event: &twitter.DirectMessageEvent{
+			Type: "message_create",
+			Message: &twitter.DirectMessageEventMessage{
+				Target: &twitter.DirectMessageTarget{
+					RecipientID: recipientID,
+				},
+				Data: &twitter.DirectMessageData{
+					Text: tweet,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if SendDirectMessages == nil {
+		return nil, fmt.Errorf("err: %v", err)
+	}
+
+	return SendDirectMessages, nil
 }

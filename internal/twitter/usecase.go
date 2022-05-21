@@ -2,10 +2,11 @@ package twitter
 
 import (
 	"github.com/ghazimuharam/go-twitter/twitter"
+	"github.com/ghazimuharam/twitter-bot/internal/twitter/entity"
 )
 
 type TweetUCItf interface {
-	CreateTweet(tweet string, mediaIds []int64) (*twitter.Tweet, error)
+	CreateTweet(entity.Tweet) (*twitter.Tweet, error)
 }
 
 type MediaUCItf interface {
@@ -15,8 +16,9 @@ type MediaUCItf interface {
 type DirectMessageUCItf interface {
 	DeleteDirectMessages(directMsgID string) (bool, error)
 	GetCleanDirectMessages(cursor string, lastDirectMsgID string, numberOfDM int) (*twitter.DirectMessageEvents, error)
-	GetDirectMessages(cursor string, numberOfDM int) (*twitter.DirectMessageEvents, error)
+	GetDirectMessages(cursor string) (*twitter.DirectMessageEvents, error)
 	GetMediaFromDirectMessage(mediaURL string) ([]byte, error)
+	SendDirectMessage(tweet, recipientID string) (*twitter.DirectMessageEvent, error)
 }
 
 type CronUCitf interface {

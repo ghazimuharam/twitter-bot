@@ -15,12 +15,13 @@ import (
 
 func InitCronApp(configs *entity.Config) *cron.CronApplication {
 	client := provideTwitterClient(configs)
-	directMessageRepo := provideDirectMessageRepo(configs, client)
+	twitterClientWrapper := provideTwitterClientWrapper(client)
+	directMessageRepo := provideDirectMessageRepo(configs, twitterClientWrapper)
 	cacheRepo := provideCacheRepo(configs)
-	directMessageUsecase := provideDirectMessageUsecase(directMessageRepo, cacheRepo, configs)
-	tweetRepo := provideTweetRepo(client, configs)
+	directMessageUsecase := provideDirectMessageUsecase(configs, directMessageRepo, cacheRepo)
+	tweetRepo := provideTweetRepo(configs, twitterClientWrapper)
 	tweetUsecase := provideTweetUsecase(tweetRepo)
-	mediaRepo := provideMediaRepo(client, configs)
+	mediaRepo := provideMediaRepo(configs, twitterClientWrapper)
 	mediaUsecase := provideMediaUsecase(mediaRepo)
 	cronUsecase := provideCronUsecase(configs, directMessageUsecase, tweetUsecase, mediaUsecase, cacheRepo)
 	cronApplication := provideCronApplication(cronUsecase, configs)
