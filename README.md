@@ -1,3 +1,6 @@
+[![Build](https://github.com/ghazimuharam/twitter-bot/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/ghazimuharam/twitter-bot/actions/workflows/go.yml)
+[![Go Test](https://github.com/ghazimuharam/twitter-bot/actions/workflows/main.yml/badge.svg)](https://github.com/ghazimuharam/twitter-bot/actions/workflows/main.yml)
+
 <div id="top"></div>
 <!-- PROJECT LOGO -->
 <br />
