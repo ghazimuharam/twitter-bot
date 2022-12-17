@@ -2,6 +2,7 @@ package cron
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ghazimuharam/go-twitter/twitter"
@@ -90,8 +91,15 @@ func (c *CronUsecase) TweetFromDirectMessage() {
 		// check if dm text have a trigger word
 		directMsgText := regex.RemoveURLFromString(dm.Message.Data.Text)
 		toTweet.Tweet = directMsgText
-		if !strings.Contains(strings.ToLower(directMsgText), strings.ToLower(c.configs.App.TriggerWord)) {
-			fmt.Println("dm text doesn't have a trigger word")
+
+		if !c.isContainsTriggerWord(directMsgText) || strings.ToLower(directMsgText) == strings.ToLower(c.configs.App.TriggerWord) {
+			// delete the dm if it's doesn't contains any trigger word or contains only trigger word
+			_, err := c.directMsgUC.DeleteDirectMessages(dm.ID)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			log.Printf("dm.ID %s is not contains trigger word or contains only trigger word, deleted\n", dm.ID)
 			continue
 		}
 
@@ -182,6 +190,10 @@ func (c *CronUsecase) TweetFromDirectMessage() {
 		// 	}
 		// }
 	*/
+}
+
+func (c *CronUsecase) isContainsTriggerWord(directMsgText string) bool {
+	return strings.Contains(strings.ToLower(directMsgText), strings.ToLower(c.configs.App.TriggerWord))
 }
 
 func setMediaFile(mediaUploaded *twitter.MediaUploadResult) []int64 {
