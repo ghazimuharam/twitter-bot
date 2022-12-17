@@ -14,7 +14,7 @@
   <p align="center">
     Automatic tweet bot from direct dessage!
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/ghazimuharam/twitter-bot"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://twitter.com/GAMEFESS_">View Demo</a>
