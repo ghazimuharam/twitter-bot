@@ -15,6 +15,7 @@ func InitConfig(appName string) *entity.Config {
 }
 
 func readConfigs(appName, env string) *entity.Config {
+	configs := &entity.Config{}
 	configTypes := []string{"main"}
 	for _, configType := range configTypes {
 		viper.SetConfigName(appName + "." + configType + "." + env) // name of config file (without extension)
@@ -35,7 +36,7 @@ func readConfigs(appName, env string) *entity.Config {
 		}
 	}
 
-	configs := &entity.Config{}
+
 	err := viper.Unmarshal(configs)
 	if err != nil {
 		log.Fatal("cannot unmarshal viper config")
